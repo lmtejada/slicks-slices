@@ -100,6 +100,19 @@ async function turnSlicemastersIntoPages({ graphql, actions }) {
     }
   `);
 
+  // Create individual slicemasters pages
+  data.slicemasters.nodes.forEach((slicemaster) => {
+    actions.createPage({
+      path: `slicemaster/${slicemaster.slug.current}`,
+      component: path.resolve('./src/templates/Slicemaster.js'),
+      context: {
+        name: slicemaster.person,
+        slug: slicemaster.slug.current,
+      },
+    });
+  });
+
+  // Handling pagination for slicemasters
   const pageSize = parseInt(process.env.GATSBY_PAGE_SIZE);
   const pageCount = Math.ceil(data.slicemasters.nodes.length / pageSize);
 
