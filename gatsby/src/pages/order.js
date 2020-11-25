@@ -16,18 +16,27 @@ const OrderStyles = styled.form`
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   fieldset {
+    display: grid;
+    gap: 1rem;
     grid-column: span 2;
     max-height: 600px;
     overflow: auto;
-    display: grid;
-    gap: 1rem;
     align-content: start;
+    label {
+      display: grid;
+      gap: 1rem;
+    }
+    label + label {
+      margin-top: 1rem;
+    }
     &.order,
     &.menu {
       grid-column: span 1;
+      /* Chrome is weird about Grid and fieldsets, so we add a fixed height to fix it :)  */
+      height: 600px;
     }
   }
-  .maple-syrup {
+  .mapleSyrup {
     display: none;
   }
   @media (max-width: 900px) {
@@ -39,12 +48,12 @@ const OrderStyles = styled.form`
 `;
 
 export default function OrderPage({ data }) {
+  const pizzas = data.pizzas.nodes;
   const { values, updateValue } = useForm({
     name: '',
     email: '',
     mapleSyrup: '',
   });
-  const pizzas = data.pizzas.nodes;
   const {
     order,
     addToOrder,
@@ -61,19 +70,18 @@ export default function OrderPage({ data }) {
   if (message) {
     return <p>{message}</p>;
   }
-
   return (
     <>
-      <SEO title="Order a pizza!" />
+      <SEO title="Order a Pizza!" />
       <OrderStyles onSubmit={submitOrder}>
         <fieldset disabled={loading}>
-          <legend>Your info</legend>
+          <legend>Your Info</legend>
           <label htmlFor="name">
             Name
             <input
               type="text"
-              id="name"
               name="name"
+              id="name"
               value={values.name}
               onChange={updateValue}
             />
@@ -81,9 +89,9 @@ export default function OrderPage({ data }) {
           <label htmlFor="email">
             Email
             <input
-              type="text"
-              id="email"
+              type="email"
               name="email"
+              id="email"
               value={values.email}
               onChange={updateValue}
             />
@@ -94,7 +102,7 @@ export default function OrderPage({ data }) {
             id="mapleSyrup"
             value={values.mapleSyrup}
             onChange={updateValue}
-            className="maple-syrup"
+            className="mapleSyrup"
           />
         </fieldset>
         <fieldset disabled={loading} className="menu">
@@ -115,7 +123,12 @@ export default function OrderPage({ data }) {
                   <button
                     type="button"
                     key={size}
-                    onClick={() => addToOrder({ id: pizza.id, size })}
+                    onClick={() =>
+                      addToOrder({
+                        id: pizza.id,
+                        size,
+                      })
+                    }
                   >
                     {size} {formatMoney(calculatePizzaPrice(pizza.price, size))}
                   </button>
@@ -128,17 +141,22 @@ export default function OrderPage({ data }) {
           <legend>Order</legend>
           <PizzaOrder
             order={order}
-            pizzas={pizzas}
             removeFromOrder={removeFromOrder}
+            pizzas={pizzas}
           />
         </fieldset>
         <fieldset disabled={loading}>
           <h3>
-            Your total is {formatMoney(calculateOrderTotal(order, pizzas))}.
+            Your Total is {formatMoney(calculateOrderTotal(order, pizzas))}
           </h3>
-          <div>{error ? <p>Error: {error}</p> : ''}</div>
+          <div aria-live="polite" aria-atomic="true">
+            {error ? <p>Error: {error}</p> : ''}
+          </div>
           <button type="submit" disabled={loading}>
-            {loading ? 'Placing order...' : 'Order Ahead'}
+            <span aria-live="assertive" aria-atomic="true">
+              {loading ? 'Placing Order...' : ''}
+            </span>
+            {loading ? '' : 'Order Ahead'}
           </button>
         </fieldset>
       </OrderStyles>
